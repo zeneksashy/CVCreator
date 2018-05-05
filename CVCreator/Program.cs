@@ -5,14 +5,35 @@ using PdfSharp.Pdf;
 using PdfSharp.Drawing;
 using System.Diagnostics;
 using PdfSharp.Drawing.Layout;
+using System.Xml.Serialization;
+using System.IO;
+using System.Xml;
+using System.Runtime.Serialization;
 
 namespace CVCreator
 {
     /// <summary>
     ///The main class creatint new page and printing every component
     /// </summary>
-    class Page
+    [DataContract]
+    public class Page
     {
+        public void Save()
+        {
+          
+            var serializer = new DataContractSerializer(typeof(Component));
+            Stream xw =  File.Create("cv.xml");
+            foreach (var cp in components)
+            {
+                if(!(cp is Klauzula))
+                serializer.WriteObject(xw, cp);
+            }
+            xw.Close();
+        }
+        public void Open(string path)
+        {
+           //TODO
+        }
         private List<Component> components = new List<Component>();
         public Page()
         {
@@ -22,7 +43,8 @@ namespace CVCreator
             }
         }
         public void Print()
-        { 
+        {
+            components.RemoveRange(8, 7);
             var document = new PdfDocument();
             var image = XImage.FromFile(Program.form1.path);
             PdfPage page = document.AddPage();
@@ -30,7 +52,7 @@ namespace CVCreator
             gfx.DrawImage(image, new XRect(15, 15, 150, 150));
             gfx.DrawLine(new XPen(XColors.Aqua,0.3), 15, 170, 165, 170);
             gfx.DrawLine(new XPen(XColors.Black, 0.2), 175, page.Height, 175, 0);
-            string path = "cv1.pdf";          
+            string path = "cv-gracjan.pdf";          
             var brush = XBrushes.Black;
             int y = 0;
             foreach (var component in components)
@@ -52,7 +74,8 @@ namespace CVCreator
     /// <summary>
     /// The base class for every specific component class
     /// </summary>
-     abstract class Component:Page
+    [DataContract,KnownType(typeof(Skills)), KnownType(typeof(Interestings)), KnownType(typeof(PersonalData)), KnownType(typeof(Courses)), KnownType(typeof(Experiences)), KnownType(typeof(Languages)), KnownType(typeof(Schooling))]
+    public abstract class Component:Page
     {
         //TODO
        //public virtual void Sort(List<ExpandedData> data)
@@ -75,12 +98,41 @@ namespace CVCreator
        private List<Component> components = new List<Component>();
        public  virtual void  AddComponent(Component cp) { components.Add(cp); }
        public abstract void Print(ref XGraphics graphics,ref int y);
+        public virtual void Save(XmlSerializer serializer) { }
+    }
+    //
+    //Container classes (Inherit from componenet)
+    //
+    public class Klauzula : Component
+    {
+        public override void Print(ref XGraphics graphics, ref int y)
+        {
+            //792
+            var tf = new XTextFormatter(graphics);
+            tf.Alignment = XParagraphAlignment.Justify;
+            var brush = XBrushes.Gray;
+            y = 750;
+            var rect = new XRect(180, y, 420, 40);
+            XFont font = new XFont("Verdana", 8, XFontStyle.Regular);
+            tf.DrawString(Value, font, brush, rect, XStringFormats.TopLeft);
+        }
+        public string Value { get; set; }
+        public Klauzula()
+        {
+            Value = "Wyrażam zgodę na przetwarzanie moich danych osobowych dla potrzeb niezbędnych do realizacji procesu rekrutacji (zgodnie z Ustawą z dnia 29.08.1997 roku o Ochronie Danych Osobowych; tekst jednolity: Dz. U. 2016 r. poz. 922).";
+        }
     }
     /// <summary>
     /// Class containing all skills user typed to form
-    /// </summary>
-    class Skills:Component
+    /// </summary> 
+    [DataContract]
+    public class Skills:Component
     {
+        //public override void Save(XmlSerializer serializer)
+        //{
+
+        //    //throw new NotImplementedException();    
+        //}
         public override void Print(ref XGraphics graphics,ref int x)
         {
             //graphics.DrawLine(XPens.Aqua, 15, y, 165, y);
@@ -110,6 +162,8 @@ namespace CVCreator
                 
             }           
         }
+
+        [DataMember]
         private List<Skill> skills = new List<Skill>();
         public void AddSkill(Skill sk) { skills.Add(sk); }
         public override void AddComponent(Component cp)
@@ -117,9 +171,13 @@ namespace CVCreator
             base.AddComponent(cp); 
         }
     }
-     class PersonalData:Component
+    /// <summary>
+    /// Class containing all personal data user typed to form
+    /// </summary>
+    [DataContract]
+    public class PersonalData:Component
     {
-        public override void Print(ref XGraphics graphics,ref int y)
+       public override void Print(ref XGraphics graphics,ref int y)
         {
             XTextFormatter tf = new XTextFormatter(graphics);
             tf.Alignment = XParagraphAlignment.Center;
@@ -164,16 +222,27 @@ namespace CVCreator
             tf.DrawString(PhoneNumber, font, brush2, rect, XStringFormats.TopLeft);
             graphics.DrawLine(new XPen(XColors.Aqua, 0.3), 15, y, 165, y);
         }
+        [DataMember]
         public string Name { get; set; }
-       public string Surrname { get; set; }
-       public string DateofBirth { get; set; }
-       public string Adress { get; set; }
-       public string Email { get; set; }
-       public string PhoneNumber { get; set; }
-       public string Website { get; set; }
+        [DataMember]
+        public string Surrname { get; set; }
+        [DataMember]
+        public string DateofBirth { get; set; }
+        [DataMember]
+        public string Adress { get; set; }
+        [DataMember]
+        public string Email { get; set; }
+        [DataMember]
+        public string PhoneNumber { get; set; }
+        [DataMember]
+        public string Website { get; set; }
         
     }
-     class Interestings:Component
+    /// <summary>
+    /// Class containing all intresting  user typed to form
+    /// </summary>
+    [DataContract]
+    public class Interestings:Component
     {
         public override void Print(ref XGraphics graphics, ref int y)
         {
@@ -196,10 +265,15 @@ namespace CVCreator
             }
             graphics.DrawLine(new XPen(XColors.Aqua, 0.3), 180, y, 595, y);
         }
+        [DataMember]
         private List<Interesting> interestings = new List<Interesting>();
         public void AddInterest(Interesting interest) { interestings.Add(interest); }
     }
-     class Courses:Component
+    /// <summary>
+    /// Class containing all courses  user typed to form
+    /// </summary>
+    [DataContract]
+    public class Courses:Component
     {
         public override void Print(ref XGraphics graphics, ref int y)
         {
@@ -222,27 +296,15 @@ namespace CVCreator
             }
             graphics.DrawLine(new XPen(XColors.Aqua, 0.3), 180, y, 595, y);
         }
+        [DataMember]
         private List<Course> courses = new List<Course>();
         public void AddCourse(Course course) { courses.Add(course); }
     }
-     abstract class SimpleData
-    {
-        virtual public string Name { get; set; }
-    }
-     class Skill:SimpleData
-    {
-        public override string Name { get => base.Name; set => base.Name = value; }
- 
-    }
-     class Interesting : SimpleData
-    {
-        public override string Name { get => base.Name; set => base.Name = value; }
-    }
-     class  Course: SimpleData
-    {
-        public override string Name { get => base.Name; set => base.Name = value; }
-    }
-     class Experiences:Component
+    /// <summary>
+    /// Class containing all experiences  user typed to form
+    /// </summary>
+    [DataContract]
+    public class Experiences : Component
     {
         public override void Print(ref XGraphics graphics, ref int y)
         {
@@ -255,7 +317,7 @@ namespace CVCreator
             XFont font = new XFont("Verdana", 15, XFontStyle.Bold);
             var font2 = new XFont("Verdana", 10, XFontStyle.Regular);
             tf.DrawString("DOŚWIADCZENIE", font, brush, rect, XStringFormats.TopLeft);
-             font = new XFont("Verdana", 11, XFontStyle.Bold);
+            font = new XFont("Verdana", 11, XFontStyle.Regular);
             foreach (var exp in experiences)
             {
                 rect = new XRect(180, y, 80, 55);
@@ -263,16 +325,21 @@ namespace CVCreator
                 rect = new XRect(285, y, 250, 20);
                 y += 20;
                 tf.DrawString(exp.Name, font, brush, rect, XStringFormats.TopLeft);
-                rect = new XRect(285, y, 250, 40);
-                y += 40;
+                rect = new XRect(285, y, 280, 35);
+                y += 35;
                 tf.DrawString(exp.Value, font2, brush2, rect, XStringFormats.TopLeft);
             }
             graphics.DrawLine(new XPen(XColors.Aqua, 0.3), 180, y, 595, y);
         }
+        [DataMember]
         private List<Experience> experiences = new List<Experience>();
         public void AddExperience(Experience experience) { experiences.Add(experience); }
     }
-     class Schooling:Component
+    /// <summary>
+    /// Class containing all schools  user typed to form
+    /// </summary>
+    [DataContract]
+    public class Schooling : Component
     {
         public override void Print(ref XGraphics graphics, ref int y)
         {
@@ -281,56 +348,36 @@ namespace CVCreator
             var brush = XBrushes.DarkBlue;
             var brush2 = XBrushes.Black;
             y += 15;
-            var rect = new XRect(180, y, 420, 40);
+            var rect = new XRect(180, y, 420, 35);
             XFont font = new XFont("Verdana", 15, XFontStyle.Bold);
             var font2 = new XFont("Verdana", 10, XFontStyle.Regular);
             tf.DrawString("WYKSZTAŁCENIE", font, brush, rect, XStringFormats.TopLeft);
-            y += 45;
-            font = new XFont("Verdana", 11, XFontStyle.Bold);
+            y += 40;
+            font = new XFont("Verdana", 11, XFontStyle.Regular);
             foreach (var school in schools)
             {
                 rect = new XRect(180, y, 80, 55);
-                tf.DrawString(school.From + " \ndo " + school.To, font2, brush2, rect, XStringFormats.TopLeft);
+                tf.DrawString(school.From + " \n" + school.To, font2, brush2, rect, XStringFormats.TopLeft);
                 rect = new XRect(285, y, 250, 20);
                 y += 20;
                 tf.DrawString(school.Name, font, brush, rect, XStringFormats.TopLeft);
-                rect = new XRect(285, y, 250, 40);
-                y += 40;
+                rect = new XRect(285, y, 280, 30);
+                y += 30;
                 tf.DrawString(school.Value, font2, brush2, rect, XStringFormats.TopLeft);
             }
             graphics.DrawLine(new XPen(XColors.Aqua, 0.3), 180, y, 595, y);
         }
+        [DataMember]
         private List<School> schools = new List<School>();
         public void AddSchool(School school) { schools.Add(school); }
     }
-     abstract class ExpandedData
+    /// <summary>
+    /// Class containing all languages  user typed to form
+    /// </summary>
+    [DataContract]
+    public class Languages : Component
     {
-        //TODO
-        //static  public int CompareTo(ExpandedData ex1, ExpandedData ex2)
-        //{
-        //    if(ex1.From)
-        //}
-        virtual public string Name { get; set; }
-        virtual public string Value { get; set; }
-        virtual public string From { get; set; }
-        virtual public string To { get; set; }
-    }
-     class Experience:ExpandedData
-    {
-        public override string Name { get => base.Name ; set => base.Name = value; }
-        public override string Value { get => base.Value ; set => base.Value = value; }
-        public override string From { get => base.From  ; set => base.From = value; }
-        public override string To { get => base.To; set => base.To = value; }
-    }
-     class School:ExpandedData
-    {
-        public override string Name { get => base.Name; set => base.Name = value; }
-        public override string Value { get => base.Value; set => base.Value = value; }
-        public override string From { get => base.From; set => base.From = value; }
-        public override string To { get => base.To; set => base.To = value; }
-    }
-     class Languages:Component
-    {
+        [DataMember]
         List<Language> languages = new List<Language>();
         public void AddLanguage(Language lang) { languages.Add(lang); }
         public override void Print(ref XGraphics graphics, ref int y)
@@ -349,37 +396,94 @@ namespace CVCreator
             foreach (var language in languages)
             {
                 rect = new XRect(190, y, 250, 15);
-                tf.DrawString("Język "+language.Name+"   "+language.Level, font2, brush2, rect, XStringFormats.TopLeft);
+                tf.DrawString("Język " + language.Name + "   " + language.Level, font2, brush2, rect, XStringFormats.TopLeft);
                 y += 15;
             }
             graphics.DrawLine(new XPen(XColors.Aqua, 0.3), 180, y, 595, y);
         }
         string Name { get; set; }
     }
-     class Language
+    //
+    //All simple data type classes
+    //
+    [DataContract]
+    public abstract class SimpleData
     {
+        [DataMember]
+        virtual public string Name { get; set; }
+    }
+    [DataContract]
+    public class Skill:SimpleData
+    {
+        [DataMember]
+        public override string Name { get => base.Name; set => base.Name = value; }
+ 
+    }
+    [DataContract]
+    public class Interesting : SimpleData
+    {
+        [DataMember]
+        public override string Name { get => base.Name; set => base.Name = value; }
+    }
+    [DataContract]
+    public class  Course: SimpleData
+    {
+        [DataMember]
+        public override string Name { get => base.Name; set => base.Name = value; }
+    }
+   //
+   //All expanded data type classes
+   //
+    [DataContract]
+    public abstract class ExpandedData
+    {
+        //TODO
+        //static  public int CompareTo(ExpandedData ex1, ExpandedData ex2)
+        //{
+        //    if(ex1.From)
+        //}
+        [DataMember]
+        virtual public string Name { get; set; }
+        [DataMember]
+        virtual public string Value { get; set; }
+        [DataMember]
+        virtual public string From { get; set; }
+        [DataMember]
+        virtual public string To { get; set; }
+    }
+    [DataContract]
+    public class Experience:ExpandedData
+    {
+        [DataMember]
+        public override string Name { get => base.Name ; set => base.Name = value; }
+        [DataMember]
+        public override string Value { get => base.Value ; set => base.Value = value; }
+        [DataMember]
+        public override string From { get => base.From  ; set => base.From = value; }
+        [DataMember]
+        public override string To { get => base.To; set => base.To = value; }
+    }
+    [DataContract]
+    public class School:ExpandedData
+    {
+        [DataMember]
+        public override string Name { get => base.Name; set => base.Name = value; }
+        [DataMember]
+        public override string Value { get => base.Value; set => base.Value = value; }
+        [DataMember]
+        public override string From { get => base.From; set => base.From = value; }
+        [DataMember]
+        public override string To { get => base.To; set => base.To = value; }
+    }
+    [DataContract]
+    public class Language
+    {
+        [DataMember]
         public  string Name { get; set; }
+        [DataMember]
         public string Level { get; set; }
     }
-     class Klauzula:Component
-    {
-        public override void Print(ref XGraphics graphics, ref int y)
-        {
-            //792
-            var tf = new XTextFormatter(graphics);
-            tf.Alignment = XParagraphAlignment.Justify;
-            var brush = XBrushes.Gray;
-            y = 750;
-            var rect = new XRect(180, y, 420, 40);
-            XFont font = new XFont("Verdana", 8, XFontStyle.Regular);
-            tf.DrawString(Value, font, brush, rect, XStringFormats.TopLeft);  
-        }
-        public string Value { get; set; }
-        public Klauzula()
-        {
-            Value = "Wyrażam zgodę na przetwarzanie moich danych osobowych dla potrzeb niezbędnych do realizacji procesu rekrutacji (zgodnie z Ustawą z dnia 29.08.1997 roku o Ochronie Danych Osobowych; tekst jednolity: Dz. U. 2016 r. poz. 922).";
-        }
-    }
+    //Main class
      static class Program
     {
         //commentsadas
@@ -394,13 +498,13 @@ namespace CVCreator
         public static Form1 form1;
         public static void AddToPage()
         {
-            page.AddComponent(skills,1);
-            page.AddComponent(experiences,2);
-            page.AddComponent(schooling,3);
-            page.AddComponent(courses,4);
-            page.AddComponent(languages, 5);
-            page.AddComponent(interestings, 6);
-            page.AddComponent(klauzula, 7);
+            page.AddComponent(skills,0);
+            page.AddComponent(experiences,1);
+            page.AddComponent(schooling,2);
+            page.AddComponent(courses,3);
+            page.AddComponent(languages, 4);
+            page.AddComponent(interestings, 5);
+            page.AddComponent(klauzula, 6);
         }
         /// <summary>
         /// The main entry point for the application.

@@ -112,7 +112,9 @@ namespace CVCreator
         private void button2_Click(object sender, EventArgs e)
         {
             Program.AddToPage();
+            Program.page.Save();
             Program.page.Print();
+            
         }
 
         private void button3_Click(object sender, EventArgs e)
