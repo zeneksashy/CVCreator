@@ -27,7 +27,8 @@ namespace CVCreator
             personal.PhoneNumber = textBox4.Text;
             personal.Email = textBox5.Text;
             personal.Website = textBox6.Text;
-            Program.page.AddComponent(personal,0);
+            Program.personal = personal;
+           // Program.page.AddComponent(personal);
            // ClearAll();
             MessageBox.Show("Dodano element");
         }

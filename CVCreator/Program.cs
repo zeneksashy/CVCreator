@@ -16,43 +16,56 @@ namespace CVCreator
     ///The main class creatint new page and printing every component
     /// </summary>
     [DataContract]
+    [KnownType(typeof(Component))]
     public class Page
     {
-        public void Save()
+        //save after printing
+        public void Save(string path)
         {
-          
-            var serializer = new DataContractSerializer(typeof(Component));
-            Stream xw =  File.Create("cv.xml");
-            foreach (var cp in components)
-            {
-                if(!(cp is Klauzula))
-                serializer.WriteObject(xw, cp);
-            }
+            var serializer = new DataContractSerializer(typeof(Page));//,new Type[] { typeof(Skills), typeof(PersonalData), typeof(Experiences), typeof(Languages), typeof(Interestings), typeof(Schooling), typeof(Courses) });
+            Stream xw =  File.Create(path);
+            serializer.WriteObject(xw, this);
+            xw.Flush();
             xw.Close();
         }
+        //open before adding data
         public void Open(string path)
         {
-           //TODO
-        }
-        private List<Component> components = new List<Component>();
-        public Page()
-        {
-            for (int i = 0; i < 8; i++)
+            var serializer = new DataContractSerializer(typeof(Page));// new Type[] { typeof(Skills), typeof(PersonalData), typeof(Experiences), typeof(Languages), typeof(Interestings), typeof(Schooling), typeof(Courses) });
+            FileStream fs = new FileStream(path, FileMode.Open);
+            XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas());
+            Page p = (Page)serializer.ReadObject(reader,false);
+            foreach (var comp in p.components)
             {
-                components.Add(null);
+                Type typeofcomp = comp.GetType();
+                switch (typeofcomp.Name)
+                {
+                    case "PersonalData": Program.personal = comp as PersonalData; break;
+                    case "Skills": Program.skills = comp as Skills; break;
+                    case "Courses": Program.courses = comp as Courses; break;
+                    case "Schooling": Program.schooling = comp as Schooling; break;
+                    case "Interestings": Program.interestings = comp as Interestings; break;
+                    case "Klauzula": Program.klauzula = comp as Klauzula; break;
+                    case "Experiences": Program.experiences = comp as Experiences; break;
+                    case "Languages": Program.languages = comp as Languages; break;
+                    default:
+                        break;
+                }
             }
         }
+        [DataMember]
+        private List<Component> components = new List<Component>();
         public void Print()
         {
-            components.RemoveRange(8, 7);
+          //  components.RemoveRange(8, 7);
             var document = new PdfDocument();
-            var image = XImage.FromFile(Program.form1.path);
+            var image = XImage.FromFile(Program.form1.photopath);
             PdfPage page = document.AddPage();
             XGraphics gfx = XGraphics.FromPdfPage(page);
             gfx.DrawImage(image, new XRect(15, 15, 150, 150));
             gfx.DrawLine(new XPen(XColors.Aqua,0.3), 15, 170, 165, 170);
             gfx.DrawLine(new XPen(XColors.Black, 0.2), 175, page.Height, 175, 0);
-            string path = "cv-gracjan.pdf";          
+            string path = "cv-gracjan1.pdf";          
             var brush = XBrushes.Black;
             int y = 0;
             foreach (var component in components)
@@ -69,12 +82,12 @@ namespace CVCreator
             document.Save(path);
             Process.Start(path);
         }
-        public void AddComponent(Component cp, int index) { components.Insert(index, cp); }
+        public void AddComponent(Component cp) {  components.Add(cp); }
     }
     /// <summary>
     /// The base class for every specific component class
     /// </summary>
-    [DataContract,KnownType(typeof(Skills)), KnownType(typeof(Interestings)), KnownType(typeof(PersonalData)), KnownType(typeof(Courses)), KnownType(typeof(Experiences)), KnownType(typeof(Languages)), KnownType(typeof(Schooling))]
+    [DataContract,KnownType(typeof(Skills)), KnownType(typeof(Interestings)), KnownType(typeof(PersonalData)), KnownType(typeof(Courses)), KnownType(typeof(Experiences)), KnownType(typeof(Languages)), KnownType(typeof(Schooling)),KnownType(typeof(Klauzula))]
     public abstract class Component:Page
     {
         //TODO
@@ -128,11 +141,6 @@ namespace CVCreator
     [DataContract]
     public class Skills:Component
     {
-        //public override void Save(XmlSerializer serializer)
-        //{
-
-        //    //throw new NotImplementedException();    
-        //}
         public override void Print(ref XGraphics graphics,ref int x)
         {
             //graphics.DrawLine(XPens.Aqua, 15, y, 165, y);
@@ -442,7 +450,7 @@ namespace CVCreator
         //{
         //    if(ex1.From)
         //}
-        [DataMember]
+        [DataMember ]
         virtual public string Name { get; set; }
         [DataMember]
         virtual public string Value { get; set; }
@@ -495,16 +503,18 @@ namespace CVCreator
         public static Schooling schooling = new Schooling();
         public static Courses courses = new Courses();
         public static Klauzula klauzula = new Klauzula();
+        public static PersonalData personal = new PersonalData();
         public static Form1 form1;
         public static void AddToPage()
         {
-            page.AddComponent(skills,0);
-            page.AddComponent(experiences,1);
-            page.AddComponent(schooling,2);
-            page.AddComponent(courses,3);
-            page.AddComponent(languages, 4);
-            page.AddComponent(interestings, 5);
-            page.AddComponent(klauzula, 6);
+            page.AddComponent(personal);
+            page.AddComponent(skills);
+            page.AddComponent(experiences);
+            page.AddComponent(schooling);
+            page.AddComponent(courses);
+            page.AddComponent(languages);
+            page.AddComponent(interestings);
+            page.AddComponent(klauzula);
         }
         /// <summary>
         /// The main entry point for the application.

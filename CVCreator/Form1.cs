@@ -16,7 +16,7 @@ namespace CVCreator
         {
             InitializeComponent();
         }
-        public string path= @"C:\Users\Zenek\Desktop\kszczicny welona\DSC_0498";
+        public string photopath= @"C:\Users\Zenek\Desktop\kszczicny welona\DSC_0498";
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -26,7 +26,7 @@ namespace CVCreator
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                path = openFileDialog1.FileName;
+                photopath = openFileDialog1.FileName;
             }
         }
 //        Doświadczenie zawodowe
@@ -112,7 +112,7 @@ namespace CVCreator
         private void button2_Click(object sender, EventArgs e)
         {
             Program.AddToPage();
-            Program.page.Save();
+            //Program.page.Save();
             Program.page.Print();
             
         }
@@ -120,6 +120,40 @@ namespace CVCreator
         private void button3_Click(object sender, EventArgs e)
         {
             Program.klauzula.Value = richTextBox1.Text;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            Program.page.Open("cv.xml");
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string path = "";
+            saveFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            saveFileDialog1.Filter = "xml file(*.xml)|*.xml";
+            var result = saveFileDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                path = saveFileDialog1.FileName;
+            }
+            Program.AddToPage();
+            Program.page.Save(path);
+
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string path = "";
+            openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            openFileDialog1.Multiselect = false;
+            openFileDialog1.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
+            var result = openFileDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                path = openFileDialog1.FileName;
+            }
+            Program.page.Open(path);
         }
     }
 }
