@@ -41,7 +41,16 @@ namespace CVCreator
             textBox5.Text = "";
             textBox6.Text = "";
             richTextBox2.Text = "";
-
+        }
+        public void Update(PersonalData p)
+        {
+            textBox1.Text = p.Name;
+            textBox2.Text = p.Surrname;
+            textBox3.Text = p.DateofBirth;
+            richTextBox2.Text = p.Adress;
+            textBox4.Text = p.PhoneNumber;
+            textBox5.Text = p.Email;
+            textBox6.Text = p.Website;
         }
     }
 }

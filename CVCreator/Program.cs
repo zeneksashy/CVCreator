@@ -40,7 +40,7 @@ namespace CVCreator
                 Type typeofcomp = comp.GetType();
                 switch (typeofcomp.Name)
                 {
-                    case "PersonalData": Program.personal = comp as PersonalData; break;
+                    case "PersonalData": Program.personal = comp as PersonalData; Program.personal.UpdateToForm(); break;
                     case "Skills": Program.skills = comp as Skills; break;
                     case "Courses": Program.courses = comp as Courses; break;
                     case "Schooling": Program.schooling = comp as Schooling; break;
@@ -65,7 +65,7 @@ namespace CVCreator
             gfx.DrawImage(image, new XRect(15, 15, 150, 150));
             gfx.DrawLine(new XPen(XColors.Aqua,0.3), 15, 170, 165, 170);
             gfx.DrawLine(new XPen(XColors.Black, 0.2), 175, page.Height, 175, 0);
-            string path = "cv-gracjan1.pdf";          
+            string path = Program.form1.filepath;          
             var brush = XBrushes.Black;
             int y = 0;
             foreach (var component in components)
@@ -226,7 +226,10 @@ namespace CVCreator
         public string PhoneNumber { get; set; }
         [DataMember]
         public string Website { get; set; }
-        
+        public void UpdateToForm()
+        {
+            Program.form1.dane1.Update(this);
+        }
     }
     /// <summary>
     /// Class containing all intresting  user typed to form
