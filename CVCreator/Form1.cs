@@ -16,7 +16,7 @@ namespace CVCreator
         {
             InitializeComponent();
         }
-        public string photopath= @"C:\Users\Zenek\Desktop\kszczicny welona\DSC_0498";
+        public string photopath = "empty";
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -111,9 +111,17 @@ namespace CVCreator
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Program.AddToPage();
-            //Program.page.Save();
-            Program.page.Print();
+            if(photopath!="empty")
+            {
+                Program.AddToPage();
+                //Program.page.Save();
+                Program.page.Print();
+            }
+            else
+            {
+                MessageBox.Show("Nie dodano zdjecia");
+            }
+            
             
         }
 

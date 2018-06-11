@@ -90,24 +90,6 @@ namespace CVCreator
     [DataContract,KnownType(typeof(Skills)), KnownType(typeof(Interestings)), KnownType(typeof(PersonalData)), KnownType(typeof(Courses)), KnownType(typeof(Experiences)), KnownType(typeof(Languages)), KnownType(typeof(Schooling)),KnownType(typeof(Klauzula))]
     public abstract class Component:Page
     {
-        //TODO
-       //public virtual void Sort(List<ExpandedData> data)
-       // {
-
-       //     //for (int i = 0; i <  data.Count; i++)
-       //     //{
-       //     //    for (int j = i + 1; j > 0; j--)
-       //     //    {
-       //     //        if (inputArray[j - 1] > inputArray[j])
-       //     //        {
-       //     //            int temp = inputArray[j - 1];
-       //     //            inputArray[j - 1] = inputArray[j];
-       //     //            inputArray[j] = temp;
-       //     //        }
-       //     //    }
-       //     //}
-       //     //return inputArray;
-       // }
        private List<Component> components = new List<Component>();
        public  virtual void  AddComponent(Component cp) { components.Add(cp); }
        public abstract void Print(ref XGraphics graphics,ref int y);
@@ -329,7 +311,7 @@ namespace CVCreator
             foreach (var exp in experiences)
             {
                 rect = new XRect(180, y, 80, 55);
-                tf.DrawString(exp.From + " \ndo " + exp.To, font2, brush2, rect, XStringFormats.TopLeft);
+                tf.DrawString(exp.From + " \n" + exp.To, font2, brush2, rect, XStringFormats.TopLeft);
                 rect = new XRect(285, y, 250, 20);
                 y += 20;
                 tf.DrawString(exp.Name, font, brush, rect, XStringFormats.TopLeft);
@@ -341,7 +323,7 @@ namespace CVCreator
         }
         [DataMember]
         private List<Experience> experiences = new List<Experience>();
-        public void AddExperience(Experience experience) { experiences.Add(experience); }
+        public void AddExperience(Experience experience) {  experiences.Add(experience); experiences.Sort(); }
     }
     /// <summary>
     /// Class containing all schools  user typed to form
@@ -377,7 +359,7 @@ namespace CVCreator
         }
         [DataMember]
         private List<School> schools = new List<School>();
-        public void AddSchool(School school) { schools.Add(school); }
+        public void AddSchool(School school) { schools.Add(school);schools.Sort(); }
     }
     /// <summary>
     /// Class containing all languages  user typed to form
@@ -443,13 +425,21 @@ namespace CVCreator
    //All expanded data type classes
    //
     [DataContract]
-    public abstract class ExpandedData
+    public abstract class ExpandedData:IComparable<ExpandedData>
     {
         //TODO
-        //static  public int CompareTo(ExpandedData ex1, ExpandedData ex2)
-        //{
-        //    if(ex1.From)
-        //}
+        public int CompareTo(ExpandedData ex2)
+        {
+            DateTime date1 = DateTime.ParseExact(this.To, "dd-MM-yyyy",
+                                       System.Globalization.CultureInfo.InvariantCulture);
+            DateTime date2 = DateTime.ParseExact(ex2.To, "dd-MM-yyyy",
+                                       System.Globalization.CultureInfo.InvariantCulture);
+            if (date1 > date2)
+                return -1;
+            if (date1 < date2)
+                return 1;
+            return 0;
+        }
         [DataMember ]
         virtual public string Name { get; set; }
         [DataMember]
@@ -492,7 +482,7 @@ namespace CVCreator
         public string Level { get; set; }
     }
     //Main class
-     static class Program
+    public static class Program
     {
         //commentsadas
         public static Page page = new Page();
