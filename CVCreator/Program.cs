@@ -82,7 +82,7 @@ namespace CVCreator
             document.Save(path);
             Process.Start(path);
         }
-        public void AddComponent(Component cp) {  components.Add(cp); }
+        public void AddComponent(Component cp){ components.Add(cp);}
     }
     /// <summary>
     /// The base class for every specific component class
@@ -341,7 +341,7 @@ namespace CVCreator
         }
         [DataMember]
         private List<Experience> experiences = new List<Experience>();
-        public void AddExperience(Experience experience) { experiences.Add(experience); }
+        public void AddExperience(Experience experience) {  experiences.Add(experience); experiences.Sort(); }
     }
     /// <summary>
     /// Class containing all schools  user typed to form
@@ -377,7 +377,7 @@ namespace CVCreator
         }
         [DataMember]
         private List<School> schools = new List<School>();
-        public void AddSchool(School school) { schools.Add(school); }
+        public void AddSchool(School school) {  schools.Add(school); schools.Sort(); }
     }
     /// <summary>
     /// Class containing all languages  user typed to form
@@ -443,13 +443,17 @@ namespace CVCreator
    //All expanded data type classes
    //
     [DataContract]
-    public abstract class ExpandedData
+    public abstract class ExpandedData:IComparable<ExpandedData>
     {
-        //TODO
-        //static  public int CompareTo(ExpandedData ex1, ExpandedData ex2)
-        //{
-        //    if(ex1.From)
-        //}
+        public int CompareTo(ExpandedData exp)
+        {
+            DateTime d1, d2;
+            var d1isdate = DateTime.TryParse(this.To,out d1);
+            var d2isdate = DateTime.TryParse(exp.To,out d2);
+            if(d1isdate && d2isdate)
+            return DateTime.Compare(d1,d2);
+            return 0;
+        }
         [DataMember ]
         virtual public string Name { get; set; }
         [DataMember]
