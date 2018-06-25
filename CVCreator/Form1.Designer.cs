@@ -261,7 +261,7 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ComboBox comboBox1;
-        private dane dane1;
+        public dane dane1;
         private szkolenia szkolenia1;
         private umiejetnosci umiejetnosci1;
         private Wykształcenie wykształcenie1;

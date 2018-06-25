@@ -16,7 +16,8 @@ namespace CVCreator
         {
             InitializeComponent();
         }
-        public string photopath= @"C:\Users\Zenek\Desktop\kszczicny welona\DSC_0498";
+        public string photopath = "empty";
+        public string filepath = "defaultcv";
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -108,15 +109,31 @@ namespace CVCreator
             button3.Visible = false;
             
         }
-
         private void button2_Click(object sender, EventArgs e)
         {
-            Program.AddToPage();
-            //Program.page.Save();
-            Program.page.Print();
-            
+            if(photopath!="empty")
+            {
+                saveFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                saveFileDialog1.Filter = "pdf file(*.pdf)|*.pdf";
+                var result = saveFileDialog1.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    filepath = saveFileDialog1.FileName;
+                    Program.AddToPage();
+                    //Program.page.Save();
+                    Program.page.Print();
+                }
+                else
+                {
+                    MessageBox.Show("Problem with file path, try other");
+                }
+                
+            }
+            else
+            {
+                MessageBox.Show("Nie dodano zdjecia");
+            }  
         }
-
         private void button3_Click(object sender, EventArgs e)
         {
             Program.klauzula.Value = richTextBox1.Text;

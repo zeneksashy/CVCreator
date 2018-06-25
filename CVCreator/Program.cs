@@ -40,7 +40,7 @@ namespace CVCreator
                 Type typeofcomp = comp.GetType();
                 switch (typeofcomp.Name)
                 {
-                    case "PersonalData": Program.personal = comp as PersonalData; break;
+                    case "PersonalData": Program.personal = comp as PersonalData; Program.personal.UpdateToForm(); break;
                     case "Skills": Program.skills = comp as Skills; break;
                     case "Courses": Program.courses = comp as Courses; break;
                     case "Schooling": Program.schooling = comp as Schooling; break;
@@ -65,7 +65,7 @@ namespace CVCreator
             gfx.DrawImage(image, new XRect(15, 15, 150, 150));
             gfx.DrawLine(new XPen(XColors.Aqua,0.3), 15, 170, 165, 170);
             gfx.DrawLine(new XPen(XColors.Black, 0.2), 175, page.Height, 175, 0);
-            string path = "cv-gracjan1.pdf";          
+            string path = Program.form1.filepath;          
             var brush = XBrushes.Black;
             int y = 0;
             foreach (var component in components)
@@ -82,7 +82,7 @@ namespace CVCreator
             document.Save(path);
             Process.Start(path);
         }
-        public void AddComponent(Component cp){ components.Add(cp);}
+        public void AddComponent(Component cp) {  components.Add(cp); }
     }
     /// <summary>
     /// The base class for every specific component class
@@ -90,24 +90,6 @@ namespace CVCreator
     [DataContract,KnownType(typeof(Skills)), KnownType(typeof(Interestings)), KnownType(typeof(PersonalData)), KnownType(typeof(Courses)), KnownType(typeof(Experiences)), KnownType(typeof(Languages)), KnownType(typeof(Schooling)),KnownType(typeof(Klauzula))]
     public abstract class Component:Page
     {
-        //TODO
-       //public virtual void Sort(List<ExpandedData> data)
-       // {
-
-       //     //for (int i = 0; i <  data.Count; i++)
-       //     //{
-       //     //    for (int j = i + 1; j > 0; j--)
-       //     //    {
-       //     //        if (inputArray[j - 1] > inputArray[j])
-       //     //        {
-       //     //            int temp = inputArray[j - 1];
-       //     //            inputArray[j - 1] = inputArray[j];
-       //     //            inputArray[j] = temp;
-       //     //        }
-       //     //    }
-       //     //}
-       //     //return inputArray;
-       // }
        private List<Component> components = new List<Component>();
        public  virtual void  AddComponent(Component cp) { components.Add(cp); }
        public abstract void Print(ref XGraphics graphics,ref int y);
@@ -244,7 +226,10 @@ namespace CVCreator
         public string PhoneNumber { get; set; }
         [DataMember]
         public string Website { get; set; }
-        
+        public void UpdateToForm()
+        {
+            Program.form1.dane1.Update(this);
+        }
     }
     /// <summary>
     /// Class containing all intresting  user typed to form
@@ -329,7 +314,7 @@ namespace CVCreator
             foreach (var exp in experiences)
             {
                 rect = new XRect(180, y, 80, 55);
-                tf.DrawString(exp.From + " \ndo " + exp.To, font2, brush2, rect, XStringFormats.TopLeft);
+                tf.DrawString(exp.From + " \n" + exp.To, font2, brush2, rect, XStringFormats.TopLeft);
                 rect = new XRect(285, y, 250, 20);
                 y += 20;
                 tf.DrawString(exp.Name, font, brush, rect, XStringFormats.TopLeft);
@@ -377,7 +362,7 @@ namespace CVCreator
         }
         [DataMember]
         private List<School> schools = new List<School>();
-        public void AddSchool(School school) {  schools.Add(school); schools.Sort(); }
+        public void AddSchool(School school) { schools.Add(school);schools.Sort(); }
     }
     /// <summary>
     /// Class containing all languages  user typed to form
@@ -445,13 +430,17 @@ namespace CVCreator
     [DataContract]
     public abstract class ExpandedData:IComparable<ExpandedData>
     {
-        public int CompareTo(ExpandedData exp)
+        //TODO
+        public int CompareTo(ExpandedData ex2)
         {
-            DateTime d1, d2;
-            var d1isdate = DateTime.TryParse(this.To,out d1);
-            var d2isdate = DateTime.TryParse(exp.To,out d2);
-            if(d1isdate && d2isdate)
-            return DateTime.Compare(d1,d2);
+            DateTime date1 = DateTime.ParseExact(this.To, "dd-MM-yyyy",
+                                       System.Globalization.CultureInfo.InvariantCulture);
+            DateTime date2 = DateTime.ParseExact(ex2.To, "dd-MM-yyyy",
+                                       System.Globalization.CultureInfo.InvariantCulture);
+            if (date1 > date2)
+                return -1;
+            if (date1 < date2)
+                return 1;
             return 0;
         }
         [DataMember ]
@@ -496,7 +485,7 @@ namespace CVCreator
         public string Level { get; set; }
     }
     //Main class
-     static class Program
+    public static class Program
     {
         //commentsadas
         public static Page page = new Page();

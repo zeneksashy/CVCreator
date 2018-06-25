@@ -22,8 +22,8 @@ namespace CVCreator
             var experience = new Experience();
             experience.Name = textBox1.Text;
             experience.Value = textBox2.Text;
-            experience.From = textBox3.Text;
-            experience.To = textBox4.Text;
+            experience.From = maskedTextBox3.Text;
+            experience.To = maskedTextBox4.Text;
             Program.experiences.AddExperience(experience);
             ClearAll();
             MessageBox.Show("Dodano element");
@@ -32,8 +32,8 @@ namespace CVCreator
         {
             textBox1.Text = "";
             textBox2.Text = "";
-            textBox3.Text = "";
-            textBox4.Text = "";
+            maskedTextBox3.Text = "";
+            maskedTextBox4.Text = "";
         }
     }
 }

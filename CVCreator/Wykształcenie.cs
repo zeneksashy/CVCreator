@@ -22,8 +22,8 @@ namespace CVCreator
             var school = new School();
             school.Name = textBox1.Text;
             school.Value = textBox2.Text;
-            school.From = textBox3.Text;
-            school.To = textBox4.Text;
+            school.From = maskedTextBox1.Text;
+            school.To = maskedTextBox2.Text;
             Program.schooling.AddSchool(school);
             ClearAll();
             MessageBox.Show("Dodano element");
@@ -32,8 +32,8 @@ namespace CVCreator
         {
             textBox1.Text = "";
             textBox2.Text = "";
-            textBox3.Text = "";
-            textBox4.Text = "";
+            maskedTextBox1.Text = "";
+            maskedTextBox2.Text = "";
         }
     }
 }
