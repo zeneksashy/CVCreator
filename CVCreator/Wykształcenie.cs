@@ -24,6 +24,8 @@ namespace CVCreator
             school.Value = textBox2.Text;
             school.From = maskedTextBox1.Text;
             school.To = maskedTextBox2.Text;
+            if (school.To == "  -  -")
+                school.To = "Obecnie";
             Program.schooling.AddSchool(school);
             ClearAll();
             MessageBox.Show("Dodano element");

@@ -9,7 +9,8 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Xml;
 using System.Runtime.Serialization;
-
+using System.Linq;
+using System.Text.RegularExpressions;
 namespace CVCreator
 {
     /// <summary>
@@ -318,8 +319,21 @@ namespace CVCreator
                 rect = new XRect(285, y, 250, 20);
                 y += 20;
                 tf.DrawString(exp.Name, font, brush, rect, XStringFormats.TopLeft);
-                rect = new XRect(285, y, 280, 35);
-                y += 35;
+                //56 is words count in one line
+                exp.Value = Regex.Unescape(exp.Value);
+                int lines_count = 2;
+                for (int i = 56,j=0; i+j < exp.Value.Length;lines_count++)
+                {
+                    // spaces are 2 times widher than normal signs
+                    var subs = exp.Value.Substring(j, i);
+                    var spaces_count = subs.Count(Char.IsWhiteSpace)*2;
+                    //lines_count+= subs.Count("\n");
+                    j += i;
+                    i = 56 - spaces_count;
+                }
+                var new_y = 11 * lines_count;
+                rect = new XRect(285, y, 280, new_y);
+                y += new_y;
                 tf.DrawString(exp.Value, font2, brush2, rect, XStringFormats.TopLeft);
             }
             graphics.DrawLine(new XPen(XColors.Aqua, 0.3), 180, y, 595, y);
@@ -354,7 +368,7 @@ namespace CVCreator
                 rect = new XRect(285, y, 250, 20);
                 y += 20;
                 tf.DrawString(school.Name, font, brush, rect, XStringFormats.TopLeft);
-                rect = new XRect(285, y, 280, 30);
+                rect = new XRect(285, y, 250, 30);
                 y += 30;
                 tf.DrawString(school.Value, font2, brush2, rect, XStringFormats.TopLeft);
             }
@@ -433,10 +447,18 @@ namespace CVCreator
         //TODO
         public int CompareTo(ExpandedData ex2)
         {
-            DateTime date1 = DateTime.ParseExact(this.To, "dd-MM-yyyy",
-                                       System.Globalization.CultureInfo.InvariantCulture);
-            DateTime date2 = DateTime.ParseExact(ex2.To, "dd-MM-yyyy",
-                                       System.Globalization.CultureInfo.InvariantCulture);
+            DateTime date1;
+            DateTime date2;
+            if (!(this.To == "Obecnie" || ex2.To== "Obecnie"))
+            {
+                date1 = DateTime.ParseExact(this.To, "dd-MM-yyyy",
+                           System.Globalization.CultureInfo.InvariantCulture);
+                date2 = DateTime.ParseExact(ex2.To, "dd-MM-yyyy",
+                                           System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+                return 1;
+
             if (date1 > date2)
                 return -1;
             if (date1 < date2)
